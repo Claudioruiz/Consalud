@@ -1,60 +1,45 @@
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-import numpy as np
 
-# Archivo Excel en el mismo repositorio
-uploaded_file = "Informe_Ejecutivos_v.8.xlsx"  # Nombre exacto del archivo
-data = pd.read_excel(uploaded_file, engine="openpyxl")
+# Cargar el archivo
+uploaded_file = "Informe_Ejecutivos v.8.xlsx"
 
+# Cargar los datos del archivo Excel
+data = pd.read_excel(uploaded_file)
 
-# Asegurarnos de que las columnas necesarias existan
-required_columns = [
-    'Supervisor', 'Ejecutivo', 'Comentario_1',
-    'Actitud_1', 'Conocimiento_1', 'Argumentación_1',
-    'Confiabilidad_1', 'Claridad_1', 'Seguridad_1'
-]
+# Reemplazar columnas con sufijos dinámicos
+# Asumimos que hay tres conjuntos de evaluaciones (_1, _2, _3)
+sufijos = ["_1", "_2", "_3"]
+columnas_base = ["Actitud", "Conocimiento", "Argumentación", "Confiabilidad"]
+columnas_mapeadas = {f"{col}{suf}": col for col in columnas_base for suf in sufijos}
 
-if not all(col in data.columns for col in required_columns):
-    st.error("La base de datos no tiene las columnas necesarias.")
-    st.stop()
+# Renombrar las columnas para simplificar
+data.rename(columns=columnas_mapeadas, inplace=True)
 
-# Filtrar los datos según el supervisor y ejecutivo seleccionados
-st.sidebar.header("Filtros")
-selected_supervisor = st.sidebar.selectbox("Seleccione un Supervisor", data['Supervisor'].unique())
-filtered_executives = data[data['Supervisor'] == selected_supervisor]['Ejecutivo'].unique()
-selected_executive = st.sidebar.selectbox("Seleccione un Ejecutivo", filtered_executives)
+# Crear un selector para elegir la dimensión
+dimensiones = list(columnas_base)
+seleccion = st.selectbox("Seleccione una dimensión para analizar:", dimensiones)
 
-# Filtrar los datos del ejecutivo seleccionado
-filtered_data = data[(data['Supervisor'] == selected_supervisor) & (data['Ejecutivo'] == selected_executive)]
+# Filtrar los datos de la dimensión seleccionada
+datos_dimension = data[[f"{seleccion}_1", f"{seleccion}_2", f"{seleccion}_3"]]
 
-if not filtered_data.empty:
-    st.title(f"Evaluación de {selected_executive}")
-    
-    # Mostrar comentario del ejecutivo
-    comentario = filtered_data['Comentario'].iloc[0]
-    st.markdown(f"**Observación:** {comentario}")
-    
-    # Gráfico de radar
-    st.markdown("### Evaluación: Gráfico de Radar")
-    dimensions = ['Actitud_1', 'Conocimiento_1', 'Argumentación_1', 'Confiabilidad_1', 'Claridad_1', 'Seguridad_1']
-    values = filtered_data[dimensions].iloc[0].values
+# Calcular promedios
+promedios = datos_dimension.mean(axis=0)
 
-    # Crear el gráfico de radar
-    angles = np.linspace(0, 2 * np.pi, len(dimensions), endpoint=False).tolist()
-    values = np.concatenate((values, [values[0]]))  # Cerrar el gráfico
-    angles += angles[:1]
+# Mostrar un gráfico de radar
+fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+valores = list(promedios.values) + [promedios.values[0]]  # Cerrar el gráfico
+etiquetas = list(datos_dimension.columns) + [datos_dimension.columns[0]]  # Etiquetas del gráfico
+angulos = [n / float(len(valores)) * 2 * 3.14159 for n in range(len(valores))]
+ax.plot(angulos, valores, linewidth=2, linestyle='solid')
+ax.fill(angulos, valores, alpha=0.4)
+ax.set_yticks([])
+ax.set_xticks(angulos[:-1])
+ax.set_xticklabels(etiquetas)
+st.pyplot(fig)
 
-    fig, ax = plt.subplots(figsize=(3, 3), subplot_kw=dict(polar=True))
-    ax.fill(angles, values, color='blue', alpha=0.25)
-    ax.plot(angles, values, color='blue', linewidth=1)
-
-    ax.set_yticks(range(1, 11))
-    ax.set_yticklabels([])
-    ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(dimensions, fontsize=6)
-
-    st.pyplot(fig)
-
-else:
-    st.warning("No hay datos disponibles para los filtros seleccionados.")
+# Campo de observaciones
+observaciones = st.text_area("Observaciones:")
+st.write("Sus observaciones son:")
+st.write(observaciones)
