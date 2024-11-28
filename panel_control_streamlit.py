@@ -10,9 +10,9 @@ data = pd.read_excel(uploaded_file, engine="openpyxl")
 
 # Asegurarnos de que las columnas necesarias existan
 required_columns = [
-    'Supervisor', 'Ejecutivo', 'Comentario',
-    'Actitud', 'Conocimiento', 'Argumentación',
-    'Confiabilidad', 'Claridad', 'Seguridad'
+    'Supervisor', 'Ejecutivo', 'Comentario_1',
+    'Actitud_1', 'Conocimiento_1', 'Argumentación_1',
+    'Confiabilidad_1', 'Claridad_1', 'Seguridad_1'
 ]
 
 if not all(col in data.columns for col in required_columns):
@@ -37,7 +37,7 @@ if not filtered_data.empty:
     
     # Gráfico de radar
     st.markdown("### Evaluación: Gráfico de Radar")
-    dimensions = ['Actitud', 'Conocimiento', 'Argumentación', 'Confiabilidad', 'Claridad', 'Seguridad']
+    dimensions = ['Actitud_1', 'Conocimiento_1', 'Argumentación_1', 'Confiabilidad_1', 'Claridad_1', 'Seguridad_1']
     values = filtered_data[dimensions].iloc[0].values
 
     # Crear el gráfico de radar
