@@ -1,48 +1,56 @@
-import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
+import pandas as pd
+import plotly.express as px
 
-# Cargar el archivo
-uploaded_file = "Informe_Ejecutivos v.8.xlsx"
+# Cargar el archivo Excel
+uploaded_file = "Informe_Ejecutivos v.8.xlsx"  # Asegúrate de que el archivo esté en el mismo directorio o ruta
+try:
+    data = pd.read_excel(uploaded_file)
+except FileNotFoundError:
+    st.error("El archivo no fue encontrado. Verifica la ruta o nombre del archivo.")
+    st.stop()
 
-# Cargar los datos del archivo Excel
-data = pd.read_excel(uploaded_file)
-
-# Mostrar las columnas disponibles en el DataFrame
+# Mostrar las columnas disponibles en el DataFrame (para depuración)
 st.write("Columnas disponibles en el DataFrame:", data.columns.tolist())
 
-# Reemplazar columnas con sufijos dinámicos
-# Asumimos que hay tres conjuntos de evaluaciones (_1, _2, _3)
-sufijos = ["_1", "_2", "_3"]
-columnas_base = ["Actitud", "Conocimiento", "Argumentación", "Confiabilidad"]
-columnas_mapeadas = {f"{col}{suf}": col for col in columnas_base for suf in sufijos}
+# Definir las dimensiones principales
+dimensiones = ["Actitud", "Conocimiento", "Argumentación", "Confiabilidad", "Claridad", "Seguridad"]
 
-# Renombrar las columnas para simplificar
-data.rename(columns=columnas_mapeadas, inplace=True)
+# Crear lista dinámica de columnas con sufijos
+columnas_dinamicas = {dimension: [f"{dimension}_1"] for dimension in dimensiones}
 
-# Crear un selector para elegir la dimensión
-dimensiones = list(columnas_base)
+# Seleccionar una dimensión para mostrar radar y comentarios
 seleccion = st.selectbox("Seleccione una dimensión para analizar:", dimensiones)
 
-# Filtrar los datos de la dimensión seleccionada
-datos_dimension = data[[f"{seleccion}_1", f"{seleccion}_2", f"{seleccion}_3"]]
+# Validar si la columna de la dimensión seleccionada existe
+if columnas_dinamicas[seleccion][0] not in data.columns:
+    st.error(f"La columna {columnas_dinamicas[seleccion][0]} no existe en los datos. Verifica el archivo.")
+    st.stop()
 
-# Calcular promedios
-promedios = datos_dimension.mean(axis=0)
+# Datos filtrados para la dimensión seleccionada
+datos_dimension = data[columnas_dinamicas[seleccion]]
 
-# Mostrar un gráfico de radar
-fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-valores = list(promedios.values) + [promedios.values[0]]  # Cerrar el gráfico
-etiquetas = list(datos_dimension.columns) + [datos_dimension.columns[0]]  # Etiquetas del gráfico
-angulos = [n / float(len(valores)) * 2 * 3.14159 for n in range(len(valores))]
-ax.plot(angulos, valores, linewidth=2, linestyle='solid')
-ax.fill(angulos, valores, alpha=0.4)
-ax.set_yticks([])
-ax.set_xticks(angulos[:-1])
-ax.set_xticklabels(etiquetas)
-st.pyplot(fig)
+# Calcular promedio para la dimensión seleccionada
+promedio_dimension = datos_dimension.mean()[0]
 
-# Campo de observaciones
-observaciones = st.text_area("Observaciones:")
-st.write("Sus observaciones son:")
-st.write(observaciones)
+# Crear gráfico radar
+fig = px.line_polar(
+    r=[promedio_dimension],
+    theta=[seleccion],
+    line_close=True,
+    title=f"Radar de la dimensión: {seleccion}",
+)
+st.plotly_chart(fig)
+
+# Mostrar comentarios relacionados con la dimensión
+comentarios_columna = f"Comentario_1"  # Ajustado para el archivo proporcionado
+if comentarios_columna in data.columns:
+    st.write(f"Comentarios para la dimensión '{seleccion}':")
+    st.write(data[comentarios_columna].dropna().tolist())
+else:
+    st.warning(f"No se encontró una columna de comentarios asociada ({comentarios_columna}).")
+
+# Campo abierto para observaciones
+observacion = st.text_area("Deje sus observaciones sobre esta dimensión:")
+if st.button("Guardar observación"):
+    st.success(f"¡Observación guardada!: {observacion}")
