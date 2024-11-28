@@ -3,9 +3,10 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Cargar los datos desde el archivo Excel
-uploaded_file = "Informe_Ejecutivos_v.8.xlsx"  # Asegúrate de que el archivo esté en el repositorio o cámbialo por una ruta válida
+# Archivo Excel en el mismo repositorio
+uploaded_file = "Informe_Ejecutivos_v.8.xlsx"  # Nombre exacto del archivo
 data = pd.read_excel(uploaded_file)
+
 
 # Asegurarnos de que las columnas necesarias existan
 required_columns = [
