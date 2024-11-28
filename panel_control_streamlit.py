@@ -5,7 +5,7 @@ import numpy as np
 
 # Archivo Excel en el mismo repositorio
 uploaded_file = "Informe_Ejecutivos_v.8.xlsx"  # Nombre exacto del archivo
-data = pd.read_excel(uploaded_file)
+data = pd.read_excel(uploaded_file, engine="openpyxl")
 
 
 # Asegurarnos de que las columnas necesarias existan
