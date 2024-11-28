@@ -8,6 +8,9 @@ uploaded_file = "Informe_Ejecutivos v.8.xlsx"
 # Cargar los datos del archivo Excel
 data = pd.read_excel(uploaded_file)
 
+# Mostrar las columnas disponibles en el DataFrame
+st.write("Columnas disponibles en el DataFrame:", data.columns.tolist())
+
 # Reemplazar columnas con sufijos dinámicos
 # Asumimos que hay tres conjuntos de evaluaciones (_1, _2, _3)
 sufijos = ["_1", "_2", "_3"]
