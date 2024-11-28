@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Archivo Excel en el mismo repositorio
-uploaded_file = "Informe_Ejecutivos_v.8.xlsx"  # Nombre exacto del archivo
+uploaded_file = "Informe_Ejecutivos v.8"  # Nombre exacto del archivo
 data = pd.read_excel(uploaded_file)
 
 
