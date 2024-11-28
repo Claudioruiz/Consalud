@@ -19,8 +19,9 @@ dimensiones = ["Actitud", "Conocimiento", "Argumentación", "Confiabilidad", "Cl
 # Crear lista dinámica de columnas con sufijos
 columnas_dinamicas = {dimension: [f"{dimension}_1"] for dimension in dimensiones}
 
-# Seleccionar una dimensión para mostrar radar y comentarios
-seleccion = st.selectbox("Seleccione una dimensión para analizar:", dimensiones)
+# Crear un menú en la barra lateral
+st.sidebar.title("Menú de opciones")
+seleccion = st.sidebar.selectbox("Seleccione una dimensión para analizar:", dimensiones)
 
 # Validar si la columna de la dimensión seleccionada existe
 if columnas_dinamicas[seleccion][0] not in data.columns:
